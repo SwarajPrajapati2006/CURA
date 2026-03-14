@@ -62,8 +62,11 @@ const searchHospitalsZembra = async (params) => {
   
   console.log(`[HospitalFinderZembra] Found ${listings.length} candidate results`);
 
+  // Step 3: Process and Analyze Results
   const detailed = [];
   const topListings = listings.slice(0, 10);
+  let aiProcessedCount = 0;
+  const MAX_AI_RESULTS = 3; // Limit AI intensive analysis to top 3
 
   for (const item of topListings) {
     try {
@@ -78,41 +81,42 @@ const searchHospitalsZembra = async (params) => {
         reviews: []
       };
 
-      // Apply initial filters
+      // Basic Filters
       if (enriched.rating < minRating) continue;
       if (category !== 'all' && enriched.category !== category) continue;
 
-      // Extract reviews if available or fetch details
-      // Note: Zembra often returns reviews in the listing/find or has a separate reviews endpoint.
-      let reviewsToAnalyze = item.reviews || [];
+      // Token Optimization Strategy:
+      // 1. Skip AI for very highly rated established facilities (they are already 'verified')
+      // 2. Filter for only descriptive reviews
+      // 3. Hard limit on total AI calls
+      
+      let reviewsToAnalyze = (item.reviews || [])
+        .filter(r => (r.text || r.content || '').length > 30) // Only descriptive reviews
+        .slice(0, 3);
 
-      // If no reviews in list, we might need a separate hit for reviews if the key allows
-      if (reviewsToAnalyze.length === 0 && (item.place_id || item.id)) {
-        try {
-          // Placeholder for reviews fetch if needed
-          // const reviewsResp = await zembraClient.get(`/listing/${enriched.place_id}/reviews`);
-          // reviewsToAnalyze = reviewsResp.data || [];
-        } catch (e) {
-          console.warn(`[HospitalFinderZembra] Could not fetch reviews for ${enriched.name}`);
-        }
-      }
+      const isEstablishedHighQuality = enriched.rating >= 4.5 && enriched.total_reviews > 100;
 
-      // AI Analysis
-      if (analyzeReviews && reviewsToAnalyze.length > 0) {
-        enriched.reviews = reviewsToAnalyze.slice(0, 5).map(r => ({
+      if (analyzeReviews && !isEstablishedHighQuality && aiProcessedCount < MAX_AI_RESULTS && reviewsToAnalyze.length > 0) {
+        enriched.reviews = reviewsToAnalyze.map(r => ({
           author: r.author || r.user_name || 'Anonymous',
           text: r.text || r.content || '',
           rating: r.rating || 5
         }));
         
+        console.log(`[HospitalFinderZembra] AI Analyzing reviews for ${enriched.name}...`);
         enriched.ai_sentiment = await analyzeReviewsBatch(enriched.reviews);
         enriched.recommendation = generateRecommendation(enriched.ai_sentiment);
+        aiProcessedCount++;
       } else if (reviewsToAnalyze.length > 0) {
-        enriched.reviews = reviewsToAnalyze.slice(0, 5).map(r => ({
+        // Just return the reviews without AI analysis for some results to save tokens
+        enriched.reviews = reviewsToAnalyze.slice(0, 3).map(r => ({
           author: r.author || r.user_name || 'Anonymous',
           text: r.text || r.content || '',
           rating: r.rating || 5
         }));
+        if (isEstablishedHighQuality) {
+          enriched.recommendation = "Highly trusted facility based on long-term patient ratings.";
+        }
       }
 
       detailed.push(enriched);
@@ -131,7 +135,9 @@ const searchHospitalsZembra = async (params) => {
   const result = {
     results: detailed,
     total: detailed.length,
-    provider: 'Zembra.io'
+    provider: 'Zembra.io',
+    ai_optimized: true,
+    tokens_saved: `${(detailed.length - aiProcessedCount) * 3} calls estimated`
   };
 
   setCache(cacheKey, result);
@@ -184,7 +190,15 @@ const generateRecommendation = (sentiments) => {
  */
 const getMockResults = async (location, type, category, minRating, analyzeReviews) => {
   const city = location.split(',')[0].trim();
-  const mockFacilities = [
+  const isJaipur = city.toLowerCase() === 'jaipur';
+
+  const mockFacilities = isJaipur ? [
+    { name: `Jaipur Healing Clinic`, rating: 4.6, reviews_count: 120, category: 'private', address: `Adarsh Nagar, Jaipur` },
+    { name: `Pink City Dental & Medical`, rating: 4.9, reviews_count: 45, category: 'private', address: `Malviya Nagar, Jaipur` },
+    { name: `Govt Dispensary Jaipur`, rating: 4.1, reviews_count: 850, category: 'government', address: `C-Scheme, Jaipur` },
+    { name: `SDMH Hospital, Jaipur`, rating: 4.5, reviews_count: 1500, category: 'private', address: `Tonk Road, Jaipur` },
+    { name: `Jaipur Clinic Center`, rating: 4.3, reviews_count: 90, category: 'private', address: `Vaishali Nagar, Jaipur` }
+  ] : [
     { name: `Apollo Hospital, ${city}`, rating: 4.8, reviews_count: 1250, category: 'private', address: `Near Main Road, ${city}` },
     { name: `Civil Hospital (Govt), ${city}`, rating: 4.2, reviews_count: 3100, category: 'government', address: `District Center, ${city}` },
     { name: `AIIMS Campus, ${city}`, rating: 4.9, reviews_count: 5600, category: 'government', address: `Health Enclave, ${city}` },
@@ -193,14 +207,20 @@ const getMockResults = async (location, type, category, minRating, analyzeReview
   ];
 
   let filtered = mockFacilities.filter(f => {
-    if (type !== 'all' && !f.name.toLowerCase().includes(type.toLowerCase())) return false;
+    const nameLow = f.name.toLowerCase();
+    if (type !== 'all') {
+      if (type === 'clinic' && !nameLow.includes('clinic') && !nameLow.includes('dispensary')) return false;
+      if (type === 'hospital' && !nameLow.includes('hospital')) return false;
+    }
     if (category !== 'all' && f.category !== category) return false;
     if (f.rating < minRating) return false;
     return true;
   });
 
   const detailed = [];
+  let aiProcessedCount = 0;
   for (const f of filtered) {
+    const isEstablished = f.rating >= 4.5 && f.reviews_count > 100;
     const enriched = {
       ...f,
       reviews: [
@@ -210,9 +230,12 @@ const getMockResults = async (location, type, category, minRating, analyzeReview
       ]
     };
 
-    if (analyzeReviews) {
+    if (analyzeReviews && !isEstablished && aiProcessedCount < 3) {
       enriched.ai_sentiment = await analyzeReviewsBatch(enriched.reviews);
       enriched.recommendation = generateRecommendation(enriched.ai_sentiment);
+      aiProcessedCount++;
+    } else if (isEstablished) {
+      enriched.recommendation = "Highly trusted facility based on long-term patient feedback.";
     }
     detailed.push(enriched);
   }
@@ -220,7 +243,9 @@ const getMockResults = async (location, type, category, minRating, analyzeReview
   return {
     results: detailed,
     total: detailed.length,
-    provider: 'Zembra.io (Demo Fallback)'
+    provider: 'Zembra.io (Demo Fallback)',
+    ai_optimized: true,
+    tokens_saved: `${(detailed.length - aiProcessedCount) * 3} calls estimated`
   };
 };
 
