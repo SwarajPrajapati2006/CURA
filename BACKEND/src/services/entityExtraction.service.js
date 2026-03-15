@@ -34,7 +34,7 @@ const extractEntities = async (commentIdOrText, isRawText = false) => {
       rawText = comment.text;
     }
 
-    if (!rawText || rawText.length < 10) {
+    if (!rawText || rawText.length < 3) {
       return parseExtractedEntities({ drug: null, side_effect: null, dosage: null, timeline_marker: null });
     }
 

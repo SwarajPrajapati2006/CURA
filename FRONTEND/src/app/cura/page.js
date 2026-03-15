@@ -8,9 +8,8 @@ export default function CuraSearchDiscovery() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState("");
 
-  const handleAnalyze = async (e) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
+  const executeSearch = async (queryToSearch) => {
+    if (!queryToSearch.trim()) return;
 
     setIsAnalyzing(true);
     setError("");
@@ -22,7 +21,7 @@ export default function CuraSearchDiscovery() {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem("token")}`
         },
-        body: JSON.stringify({ drug: searchQuery })
+        body: JSON.stringify({ drug: queryToSearch })
       });
 
       const result = await response.json();
@@ -31,15 +30,20 @@ export default function CuraSearchDiscovery() {
         throw new Error(result.error || "Failed to analyze treatment");
       }
 
-      // Proactively navigate to treatment or show result
       console.log("Analysis Result:", result);
-      window.location.href = `/cura/treatment?drug=${encodeURIComponent(searchQuery)}`;
+      window.location.href = `/cura/treatment?drug=${encodeURIComponent(queryToSearch)}`;
 
     } catch (err) {
       setError(err.message);
       setIsAnalyzing(false);
     }
   };
+
+  const handleAnalyze = async (e) => {
+    e.preventDefault();
+    await executeSearch(searchQuery);
+  };
+
 
   return (
     <>
@@ -129,7 +133,11 @@ export default function CuraSearchDiscovery() {
             ].map((tag) => (
               <div
                 key={tag.label}
-                className="px-5 py-2.5 bg-surface-container-low border border-outline-variant/10 text-on-surface-variant rounded-full text-sm font-medium flex items-center gap-2 hover:bg-primary/5 hover:text-primary hover:border-primary/20 cursor-pointer transition-all hover:scale-105 hover:-translate-y-0.5"
+                onClick={() => {
+                  setSearchQuery(tag.label);
+                  executeSearch(tag.label);
+                }}
+                className={`px-5 py-2.5 bg-surface-container-low border border-outline-variant/10 text-on-surface-variant rounded-full text-sm font-medium flex items-center gap-2 hover:bg-primary/5 hover:text-primary hover:border-primary/20 cursor-pointer transition-all hover:scale-105 hover:-translate-y-0.5 ${isAnalyzing ? 'opacity-50 pointer-events-none' : ''}`}
               >
                 <span className="material-symbols-outlined text-lg">{tag.icon}</span>
                 {tag.label}

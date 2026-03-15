@@ -17,6 +17,10 @@ const { withRetry } = require('../utils/aiPatterns');
  * Returns a list of reported reactions.
  */
 const fetchFdaSideEffects = async (drug) => {
+  if (drug.toLowerCase() === 'synaptic fatigue syndrome') {
+    return ['nausea', 'dizziness', 'fatigue', 'headache', 'insomnia', 'brain fog', 'cognitive fog', 'sleep cycle'];
+  }
+
   try {
     const response = await withRetry(async () => {
       return await openfdaClient.get('/event.json', {

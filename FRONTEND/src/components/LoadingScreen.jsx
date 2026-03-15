@@ -1,23 +1,28 @@
 "use client";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 
 export default function LoadingScreen({ children }) {
   const [loading, setLoading] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
+    setLoading(true);
+    setFadeOut(false);
+    
     const timer = setTimeout(() => {
       setFadeOut(true);
-    }, 1600);
+    }, 1200);
     const removeTimer = setTimeout(() => {
       setLoading(false);
-    }, 2000);
+    }, 1500);
     return () => {
       clearTimeout(timer);
       clearTimeout(removeTimer);
     };
-  }, []);
+  }, [pathname]);
 
   if (!loading) return children;
 
