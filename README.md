@@ -223,10 +223,20 @@ The output of the AI pipeline:
 
 ---
 
+## **The Team: CodeBros**
+
+- **Rituraj Jha** (Team Lead & AI Strategy) - [@riturajjhaba938](https://github.com/riturajjhaba938)
+- **Swaraj Prajapati** (Frontend & UX Lead) - [@SwarajPrajapati2006](https://github.com/SwarajPrajapati2006)
+- **Rishab Chandgothia** (Backend & Data Engineer) - [@rishab11250](https://github.com/rishab11250)
+- **Nikhil Raj** (UI / UX, Testing & Integration) - [@nikhilraj-13](https://github.com/nikhilraj-13)
+
+---
+
 ## **Contact**
 
 **Contact**: 
-- **GitHub**: [riturajjhaba938/CURA](https://github.com/riturajjhaba938/CURA)
+- **Main Repository**: [riturajjhaba938/CURA](https://github.com/riturajjhaba938/CURA)
+- **Project Site**: [CURA Medical Intelligence](https://cura-ai.med)
 
 ---
 *Disclaimer: CURA is an AI-driven research tool and should not be used for medical diagnosis.*
