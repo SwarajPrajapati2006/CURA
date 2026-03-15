@@ -116,9 +116,9 @@ export default function CuraNavbar() {
       setCurrentSuggestion(suggestions[index]);
       setShowPopup(true);
       
-      // Hide after 4 seconds to animate out before next
-      setTimeout(() => setShowPopup(false), 4000);
-    }, 5000);
+      // Hide after 6 seconds to animate out before next
+      setTimeout(() => setShowPopup(false), 6000);
+    }, 7000);
 
     return () => clearInterval(interval);
   }, [suggestions]);

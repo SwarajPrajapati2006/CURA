@@ -34,5 +34,41 @@
     "suggestion": "It's time for your daily dose of Vitamin D. 15 minutes of sun helps!",
     "category": "lifestyle",
     "priority": "normal"
+  },
+  {
+    "id": 7,
+    "suggestion": "Posture check! Sit up straight and relax your shoulders.",
+    "category": "activity",
+    "priority": "high"
+  },
+  {
+    "id": 8,
+    "suggestion": "Reduce your caffeine intake in the afternoon for better deep sleep.",
+    "category": "diet",
+    "priority": "normal"
+  },
+  {
+    "id": 9,
+    "suggestion": "Brief meditative pauses lower cortisol and reduce systemic inflammation.",
+    "category": "mental_health",
+    "priority": "normal"
+  },
+  {
+    "id": 10,
+    "suggestion": "Reminder: Try to blink more often to prevent eye strain from screens.",
+    "category": "lifestyle",
+    "priority": "normal"
+  },
+  {
+    "id": 11,
+    "suggestion": "Electrolytes are key. Consider a magnesium-rich snack like almonds or pumpkin seeds.",
+    "category": "diet",
+    "priority": "high"
+  },
+  {
+    "id": 12,
+    "suggestion": "Take a short walk outdoors. Fresh air drastically improves focus and circulation.",
+    "category": "activity",
+    "priority": "normal"
   }
 ]
