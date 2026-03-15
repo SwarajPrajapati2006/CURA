@@ -46,10 +46,10 @@ USER_AGENT = (
     "Chrome/124.0.0.0 Safari/537.36"
 )
 
-REQUEST_TIMEOUT = 8  # seconds
-MAX_RETRIES = 2
+REQUEST_TIMEOUT = 15  # seconds (increased for demo stability)
+MAX_RETRIES = 5       # more retries for demo robustness
 BASE_DELAY = 0.5  # seconds between requests
-MAX_COMMENT_DEPTH_PAGES = 100
+MAX_COMMENT_DEPTH_PAGES = 200 # increased depth for more data
 
 
 # ─── Scraper Class ────────────────────────────────────────────────────────────
