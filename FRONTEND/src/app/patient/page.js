@@ -16,9 +16,8 @@ export default function PatientHome() {
     }
   }, []);
 
-  const handleAnalyze = async (e) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
+  const executeSearch = async (queryToSearch) => {
+    if (!queryToSearch.trim()) return;
 
     setIsSearching(true);
     setSearchError("");
@@ -32,7 +31,7 @@ export default function PatientHome() {
           "Content-Type": "application/json",
           ...(token && { "Authorization": `Bearer ${token}` }),
         },
-        body: JSON.stringify({ drug: searchQuery, mode: "quick" }),
+        body: JSON.stringify({ drug: queryToSearch, mode: "quick" }),
       });
 
       const result = await response.json();
@@ -42,11 +41,16 @@ export default function PatientHome() {
       }
 
       setSearchResult(result);
+      window.location.href = `/cura/treatment?drug=${encodeURIComponent(queryToSearch)}`;
     } catch (err) {
       setSearchError(err.message);
-    } finally {
       setIsSearching(false);
     }
+  };
+
+  const handleAnalyze = async (e) => {
+    e.preventDefault();
+    await executeSearch(searchQuery);
   };
 
   return (
@@ -106,7 +110,15 @@ export default function PatientHome() {
             {/* Floating Chips */}
             <div className="flex flex-wrap justify-center gap-3 pt-4">
               {["Energy levels after recovery", "Managing side effects", "Medication interactions", "Sleep quality trends"].map((chip) => (
-                <button key={chip} className="glass-card hover:bg-surface-container-lowest px-5 py-2.5 rounded-full text-sm font-medium text-on-surface-variant transition-all hover:-translate-y-1 antigravity-shadow">
+                <button 
+                  key={chip} 
+                  onClick={() => {
+                    setSearchQuery(chip);
+                    executeSearch(chip);
+                  }}
+                  disabled={isSearching}
+                  className={`glass-card hover:bg-surface-container-lowest px-5 py-2.5 rounded-full text-sm font-medium text-on-surface-variant transition-all hover:-translate-y-1 antigravity-shadow ${isSearching ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                >
                   {chip}
                 </button>
               ))}

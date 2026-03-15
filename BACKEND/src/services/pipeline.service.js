@@ -45,7 +45,8 @@ const processScrapedComments = async (drugName) => {
   }).select('comment_id');
   const alreadyProcessed = new Set(existingInsights.map((i) => i.comment_id));
 
-  const newComments = allComments.filter((c) => !alreadyProcessed.has(c.comment_id));
+  // Cap at 20 comments to prevent the API from taking too long to respond
+  const newComments = allComments.filter((c) => !alreadyProcessed.has(c.comment_id)).slice(0, 20);
   logger.info(`[Pipeline] ${newComments.length} new comments to process (${alreadyProcessed.size} already done)`);
 
   // 4. Process each comment through NER

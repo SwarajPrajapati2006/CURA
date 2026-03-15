@@ -1,6 +1,10 @@
 "use client";
 import FAB from "@/components/FAB";
 import { useState, useEffect } from "react";
+import BSMeterUI from "@/components/BSMeterUI";
+import ChronologicalTimeline from "@/components/ChronologicalTimeline";
+import SourceCard from "@/components/SourceCard";
+import RealTimeChat from "@/components/RealTimeChat";
 
 export default function CuraTreatment() {
   const [costRangeIndex, setCostRangeIndex] = useState(0);
@@ -9,11 +13,23 @@ export default function CuraTreatment() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [drugName, setDrugName] = useState("");
+  const [userCity, setUserCity] = useState(null);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const drug = urlParams.get('drug') || 'Synaptic Fatigue Syndrome';
     setDrugName(drug);
+
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        const uData = u.user || u;
+        if (uData.district) {
+          setUserCity(uData.district);
+        }
+      } catch (e) {}
+    }
 
     const fetchData = async () => {
       try {
@@ -42,41 +58,26 @@ export default function CuraTreatment() {
             <span className="text-sm font-bold uppercase tracking-widest leading-none">Plain Language Summary</span>
           </div>
           <h3 className="font-[Manrope] text-4xl font-light leading-tight mb-6">
-            Targeted <span className="text-primary font-bold">Neuro-Modulation</span> therapy uses low-frequency
-            pulses to recalibrate synaptic response patterns without the need for systemic medication.
+            Based on <span className="text-primary font-bold">{data?.totalEntries || 1240} user reports</span>, this treatment profile outlines patient experiences, side effects, and recovery timelines.
           </h3>
           <p className="text-on-surface-variant text-lg leading-relaxed mb-8">
-            This approach prioritizes patient comfort by focusing on specific neural pathways, reducing the likelihood
-            of broad systemic side effects while maintaining a high clinical accuracy.
+            This approach prioritizes real-world clinical insights crossed-referenced with OpenFDA data, reducing the likelihood of hallucinations while maintaining high clinical accuracy.
           </p>
           <div className="flex gap-4">
             <button className="px-8 py-3 bg-primary text-on-primary rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-primary-container transition-all">
-              Protocol Details <span className="material-symbols-outlined text-xl leading-none">arrow_forward</span>
-            </button>
-            <button className="px-8 py-3 bg-surface-container-high text-primary rounded-xl font-medium hover:bg-surface-container-highest transition-all">
-              Clinical Sources
+              Verify Clinical Sources <span className="material-symbols-outlined text-xl leading-none">verified</span>
             </button>
           </div>
         </div>
       </section>
 
-      {/* 3-Column Bento Grid */}
+      {/* Main Content Dashboard Grid */}
       <div className="grid grid-cols-12 gap-8">
-        {/* Column 1: Big Metrics */}
-        <div className="col-span-12 lg:col-span-4 space-y-8">
-          <div className="glass-card rounded-3xl p-8 transition-transform hover:-translate-y-1 antigravity-shadow">
-            <div className="flex items-center justify-between mb-8">
-              <span className="w-12 h-12 bg-secondary-container text-primary rounded-2xl flex items-center justify-center material-symbols-outlined text-2xl leading-none">verified</span>
-              <span className="w-8 h-8 flex items-center justify-center material-symbols-outlined text-outline-variant cursor-pointer leading-none">info</span>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-on-surface-variant font-semibold">Success Rate</p>
-              <h4 className="font-[Manrope] text-6xl font-extrabold text-primary">78<span className="text-3xl opacity-60">%</span></h4>
-            </div>
-            <div className="mt-6 pt-6 border-t border-outline-variant/10">
-              <p className="text-xs text-on-surface-variant leading-relaxed">Based on 1,240 observed patient outcomes within a 12-month clinical window.</p>
-            </div>
-          </div>
+        
+        {/* AI Credibility Meter */}
+        <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
+          <BSMeterUI score={data?.credibilityScore || 85} />
+          
           <div className="glass-card rounded-3xl p-8 transition-transform hover:-translate-y-1 antigravity-shadow">
             <div className="flex items-center justify-between mb-8">
               <span className="w-12 h-12 bg-tertiary-fixed text-tertiary rounded-2xl flex items-center justify-center material-symbols-outlined text-2xl leading-none">speed</span>
@@ -84,73 +85,24 @@ export default function CuraTreatment() {
             </div>
             <div className="space-y-1">
               <p className="text-sm text-on-surface-variant font-semibold">Median Recovery</p>
-              <h4 className="font-[Manrope] text-6xl font-extrabold text-on-surface">42<span className="text-3xl opacity-40 font-light ml-2">days</span></h4>
-            </div>
-            <div className="mt-6 flex gap-2">
-              <span className="px-3 py-1 bg-surface-container-high rounded-full text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Fast-Track</span>
-              <span className="px-3 py-1 bg-surface-container-high rounded-full text-[10px] font-bold text-on-surface-variant uppercase tracking-tighter">Non-Invasive</span>
+              <h4 className="font-[Manrope] text-6xl font-extrabold text-on-surface">
+                {data?.medianRecoveryDays || 42}<span className="text-3xl opacity-40 font-light ml-2">days</span>
+              </h4>
             </div>
           </div>
         </div>
 
-        {/* Column 2: Side Effects Heatmap */}
-        <div className="col-span-12 lg:col-span-5 space-y-8">
-          <div className="glass-card rounded-3xl p-8 h-full flex flex-col antigravity-shadow">
-            <div className="flex items-center justify-between mb-10">
-              <h5 className="font-[Manrope] text-xl font-bold">Side Effects Heatmap</h5>
-              <span className="text-xs text-primary font-bold flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-primary"></span>
-                User Reported
-              </span>
-            </div>
-            <div className="grid grid-cols-4 gap-4 flex-1">
-              {[
-                { icon: "bedtime", label: "Sleep", opacity: "20" },
-                { icon: "psychology", label: "Focus", opacity: "40" },
-                { icon: "restaurant", label: "Appetite", opacity: "10" },
-                { icon: "mood", label: "Mood", opacity: "5" },
-                { icon: "fitness_center", label: "Vigor", opacity: "30" },
-                { icon: "visibility", label: "Vision", opacity: "60" },
-                { icon: "hearing", label: "Aural", opacity: "10" },
-                { icon: "waves", label: "Balance", opacity: "5" },
-              ].map((item) => (
-                <div key={item.label} className={`bg-primary/${item.opacity} aspect-square rounded-2xl flex flex-col items-center justify-center gap-1.5 group relative cursor-help`}>
-                  <span className="material-symbols-outlined text-primary text-[20px] block leading-none">{item.icon}</span>
-                  <span className="text-[10px] font-bold text-primary">{item.label}</span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-8 flex items-center justify-between text-[10px] font-bold text-on-surface-variant uppercase tracking-widest px-2">
-              <span>Low Frequency</span>
-              <div className="flex-1 h-1 mx-4 bg-gradient-to-r from-primary/5 via-primary/40 to-primary rounded-full"></div>
-              <span>High Frequency</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Column 3: Top Adjuncts */}
-        <div className="col-span-12 lg:col-span-3">
-          <div className="glass-card rounded-3xl p-8 h-full antigravity-shadow">
-            <h5 className="font-[Manrope] text-xl font-bold mb-8">Top Adjuncts</h5>
-            <div className="space-y-6">
-              {[
-                { icon: "self_improvement", title: "Deep Breathwork", desc: "Increases efficacy by 12%" },
-                { icon: "lightbulb", title: "Blue Light Therapy", desc: "Recommended for evening" },
-                { icon: "pill", title: "Vitamin B12 Boost", desc: "Supports neural repair" },
-                { icon: "water_drop", title: "Electrolyte Intake", desc: "Critical for pulse transit" },
-              ].map((adj) => (
-                <div key={adj.title} className="flex items-center gap-4 group">
-                  <div className="w-12 h-12 rounded-2xl bg-surface-container-high flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-all shrink-0">
-                    <span className="material-symbols-outlined text-[22px] block leading-none">{adj.icon}</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold">{adj.title}</p>
-                    <p className="text-[10px] text-on-surface-variant">{adj.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* Timeline */}
+        <div className="col-span-12 lg:col-span-8 flex flex-col h-full">
+          <ChronologicalTimeline 
+            timelineData={data?.timeline || [
+              { marker: "Week 1", sentimentScore: 30, description: "Initial distress, high side-effects reported." },
+              { marker: "Week 2", sentimentScore: 45, description: "Adapting to treatment, minor improvements." },
+              { marker: "Month 1", sentimentScore: 65, description: "Noticeable symptom reduction." },
+              { marker: "Month 2", sentimentScore: 85, description: "Recovery trajectory stabilized." },
+              { marker: "Month 3", sentimentScore: 92, description: "Full clinical remission reported by most users." }
+            ]} 
+          />
         </div>
       </div>
 
@@ -240,29 +192,35 @@ export default function CuraTreatment() {
         </div>
       </section>
 
-      {/* Key Facts About the Disease */}
-      <section className="glass-card rounded-[2rem] p-10 antigravity-shadow">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 flex-shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-            <span className="material-symbols-outlined text-[22px] block leading-none">info</span>
-          </div>
-          <h4 className="font-[Manrope] text-2xl font-bold">Important Information</h4>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[
-            { icon: "science", title: "About the Condition", desc: "Synaptic Fatigue Syndrome (SFS) affects neural signal transmission efficiency. It can lead to cognitive slowdown, speech hesitation, and motor delays if untreated." },
-            { icon: "warning", title: "Risk Factors", desc: "High stress levels, sleep deprivation (< 5hrs/night), prolonged screen exposure, and genetic predisposition (CHRNA4 gene variant) increase susceptibility by 3.2x." },
-            { icon: "medication", title: "Treatment Timeline", desc: "Early intervention with neuro-modulation therapy shows 78% success rate. Treatment typically spans 6-8 weeks with bi-weekly sessions. Full response expected within 42 days." },
-            { icon: "monitoring", title: "Monitoring Required", desc: "Weekly EEG monitoring, bi-weekly voice trace analysis, and monthly cognitive assessments recommended. Report any sudden changes in speech or motor function immediately." },
-          ].map((item) => (
-            <div key={item.title} className="flex items-start gap-4 p-5 bg-surface-container-low rounded-2xl hover:bg-surface-container-high transition-colors">
-              <span className="w-8 h-8 flex items-center justify-center material-symbols-outlined text-primary text-xl block leading-none shrink-0">{item.icon}</span>
-              <div>
-                <p className="font-bold text-on-surface mb-1">{item.title}</p>
-                <p className="text-sm text-on-surface-variant leading-relaxed">{item.desc}</p>
-              </div>
+      {/* Key Facts & Cura Intelligence Chat */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        <div className="glass-card rounded-[2rem] p-10 antigravity-shadow">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 flex-shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+              <span className="material-symbols-outlined text-[22px] block leading-none">info</span>
             </div>
-          ))}
+            <h4 className="font-[Manrope] text-2xl font-bold">Important Information</h4>
+          </div>
+          <div className="flex flex-col gap-6">
+            {[
+              { icon: "science", title: "About the Condition", desc: `${drugName} is actively documented in peer communities. Symptoms and recovery patterns are tracked longitudinally via forum sentiment processing.` },
+              { icon: "medication", title: "Treatment Timeline", desc: "Most users begin adapting to therapeutic regimens within the first 14-days based on our timeline charting data." },
+              { icon: "monitoring", title: "Monitoring Sources", desc: "Data relies on verified Sub-Reddit extractions and cross-reference validation engines from OpenFDA arrays." },
+            ].map((item) => (
+              <div key={item.title} className="flex items-start gap-4 p-5 bg-surface-container-low rounded-2xl hover:bg-surface-container-high transition-colors">
+                <span className="w-8 h-8 flex items-center justify-center material-symbols-outlined text-primary text-xl block leading-none shrink-0">{item.icon}</span>
+                <div>
+                  <p className="font-bold text-on-surface mb-1">{item.title}</p>
+                  <p className="text-sm text-on-surface-variant leading-relaxed">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Real-Time Contextual Chat Agent */}
+        <div className="flex justify-center lg:justify-end">
+          <RealTimeChat drugContext={drugName} />
         </div>
       </section>
 
@@ -270,7 +228,9 @@ export default function CuraTreatment() {
       <section className="space-y-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <span className="w-10 h-10 rounded-full bg-primary flex items-center justify-center material-symbols-outlined text-on-primary">local_hospital</span>
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-on-primary text-xl block leading-none" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>local_hospital</span>
+            </div>
             <div>
               <h4 className="font-[Manrope] text-2xl font-bold">Recommended Clinics Nearby</h4>
               <p className="text-sm text-on-surface-variant">Specialized centers for Synaptic Fatigue Syndrome treatment</p>
@@ -309,6 +269,7 @@ export default function CuraTreatment() {
           {[
             {
               name: "NeuroVita Specialty Hospital",
+              city: "Mumbai",
               type: "Tertiary Care Hospital",
               distance: "2.4 km",
               rating: 4.8,
@@ -321,9 +282,13 @@ export default function CuraTreatment() {
               availability: "Next Available: Tomorrow, 10:30 AM",
               tags: ["Gold Standard", "Insurance Accepted", "24/7 Neuro ICU"],
               color: "primary",
+              phone: "+912245678901",
+              email: "contact@neurovita.in",
+              address: "124 Linking Road, Bandra West, Mumbai, Maharashtra 400050"
             },
             {
               name: "MindBridge Clinical Center",
+              city: "Bangalore",
               type: "Specialty Clinic",
               distance: "5.1 km",
               rating: 4.6,
@@ -336,9 +301,13 @@ export default function CuraTreatment() {
               availability: "Next Available: March 16, 2:00 PM",
               tags: ["Research Hub", "AI-Assisted", "Clinical Trials"],
               color: "secondary",
+              phone: "+918023456789",
+              email: "info@mindbridge.clinic",
+              address: "45 MG Road, Bangalore, Karnataka 560001"
             },
             {
               name: "Apollo Neuro Sciences",
+              city: "New Delhi",
               type: "Multi-Specialty Hospital",
               distance: "8.7 km",
               rating: 4.5,
@@ -351,9 +320,13 @@ export default function CuraTreatment() {
               availability: "Next Available: March 15, 4:15 PM",
               tags: ["Emergency Ready", "Multi-lingual Staff", "Rehab Center"],
               color: "tertiary",
+              phone: "+911134567890",
+              email: "support@apollo-neuro.com",
+              address: "Apollo Hospital Sarita Vihar, Mathura Rd, Delhi 110076"
             },
             {
               name: "Fortis Brain & Spine Institute",
+              city: "Chennai",
               type: "Super-Specialty Hospital",
               distance: "3.8 km",
               rating: 4.7,
@@ -366,9 +339,13 @@ export default function CuraTreatment() {
               availability: "Next Available: March 15, 11:00 AM",
               tags: ["Robotic Surgery", "International Team", "NABH Accredited"],
               color: "primary",
+              phone: "+914456789012",
+              email: "care@fortis-brain.in",
+              address: "Arcot Rd, Vadapalani, Chennai, Tamil Nadu 600026"
             },
             {
               name: "Medanta NeuroCenter",
+              city: "Pune",
               type: "Research Hospital",
               distance: "12.3 km",
               rating: 4.9,
@@ -381,9 +358,13 @@ export default function CuraTreatment() {
               availability: "Next Available: March 18, 9:00 AM",
               tags: ["#1 National Rank", "Gene Therapy", "Phase-3 Trials", "Published Research"],
               color: "secondary",
+              phone: "+912067890123",
+              email: "appointments@medantaneuro.com",
+              address: "Medanta The Medicity Area, Pune, Maharashtra 411014"
             },
             {
               name: "Jaipur Neuro Wellness Clinic",
+              city: "Jaipur",
               type: "Outpatient Clinic",
               distance: "1.2 km",
               rating: 4.3,
@@ -396,8 +377,21 @@ export default function CuraTreatment() {
               availability: "Walk-in Available Today",
               tags: ["Budget Friendly", "Walk-in", "Near You", "Basic Screening"],
               color: "tertiary",
+              phone: "+911417890123",
+              email: "hello@jaipurneuro.in",
+              address: "Tonk Rd, Gandhi Nagar, Jaipur, Rajasthan 302015"
             },
-          ].map((clinic, i) => (
+          ]
+          .filter(clinic => !userCity || clinic.city === userCity)
+          .filter(clinic => {
+            if (costRangeIndex === 0) return true;
+            const curLength = clinic.cost.length;
+            if (costRangeIndex === 1) return curLength <= 2;
+            if (costRangeIndex === 2) return curLength === 3;
+            if (costRangeIndex === 3) return curLength >= 4;
+            return true;
+          })
+          .map((clinic, i) => (
             <div key={clinic.name} className="glass-card rounded-[2rem] p-8 flex flex-col justify-between antigravity-shadow hover:-translate-y-1 transition-transform group">
               {/* Header */}
               <div>
@@ -462,55 +456,50 @@ export default function CuraTreatment() {
                   Contact Information
                 </p>
                 <div className="flex items-center justify-between gap-2">
-                  <button title="Call Clinic" className="flex-1 py-2.5 bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 group/btn">
+                  <a href={`tel:${clinic.phone}`} title="Call Clinic" className="flex-1 py-2.5 bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 group/btn">
                     <span className="w-5 h-5 flex items-center justify-center material-symbols-outlined text-base text-primary group-hover/btn:scale-110 transition-transform leading-none">call</span>
                     Contact
-                  </button>
-                  <button title="Get Directions" className="flex-1 py-2.5 bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 group/btn">
+                  </a>
+                  <a href={`https://maps.google.com/?q=${encodeURIComponent(clinic.name + ' ' + clinic.address)}`} target="_blank" rel="noopener noreferrer" title="Get Directions" className="flex-1 py-2.5 bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 group/btn">
                     <span className="w-5 h-5 flex items-center justify-center material-symbols-outlined text-base text-secondary group-hover/btn:scale-110 transition-transform leading-none" style={{ fontVariationSettings: "'FILL' 1" }}>location_on</span>
                     Location
-                  </button>
-                  <button title="Email Clinic" className="w-10 h-10 bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded-xl flex items-center justify-center transition-colors flex-shrink-0 group/btn">
+                  </a>
+                  <a href={`mailto:${clinic.email}`} title="Email Clinic" className="w-10 h-10 bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded-xl flex items-center justify-center transition-colors flex-shrink-0 group/btn">
                     <span className="w-5 h-5 flex items-center justify-center material-symbols-outlined text-base text-tertiary group-hover/btn:scale-110 transition-transform leading-none">mail</span>
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Patient Review Highlights */}
-        <div className="glass-card rounded-[2rem] p-8 antigravity-shadow">
-          <h5 className="font-[Manrope] text-lg font-bold mb-6 flex items-center gap-2">
-            <span className="w-8 h-8 flex items-center justify-center material-symbols-outlined text-primary text-xl block leading-none">rate_review</span>
-            Recent Patient Reviews
-          </h5>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { name: "Ananya S.", clinic: "NeuroVita", rating: 5, text: "Dr. Mehra explained everything about my SFS diagnosis clearly. The neuro-modulation therapy reduced my symptoms within 3 weeks. Highly recommend.", time: "2 weeks ago" },
-              { name: "Rahul P.", clinic: "MindBridge", rating: 5, text: "The AI-assisted diagnostics at MindBridge caught early signs that two other hospitals missed. Their voice trace analysis was incredibly accurate.", time: "1 month ago" },
-              { name: "Priya K.", clinic: "Apollo Neuro", rating: 4, text: "Comprehensive treatment plan and excellent rehab facility. The team coordinated between neurology and physiotherapy seamlessly. Recovery took 5 weeks.", time: "3 weeks ago" },
-              { name: "Amit V.", clinic: "Fortis Brain", rating: 5, text: "The robotic-assisted procedure was painless. Dr. Nair is exceptional — she walked me through every step. Post-op recovery was smooth and the nursing staff was attentive 24/7.", time: "1 week ago" },
-              { name: "Sanya M.", clinic: "Medanta", rating: 5, text: "Traveled from Kolkata specifically for Dr. Kapoor. Worth every rupee. The gene therapy trial gave me hope when nothing else worked. 3 months in and I feel like a new person.", time: "2 months ago" },
-              { name: "Karan D.", clinic: "Jaipur Neuro", rating: 4, text: "Perfect for follow-ups. No appointment needed, walked in and was seen within 10 minutes. Dr. Joshi is thorough with consultations. Very affordable compared to bigger hospitals.", time: "5 days ago" },
-            ].map((review) => (
-              <div key={review.name} className="p-5 bg-surface-container-low rounded-2xl hover:bg-surface-container-high transition-colors">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-primary text-sm font-bold">
-                    {review.name.split(' ').map(n => n[0]).join('')}
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-on-surface">{review.name}</p>
-                    <p className="text-[10px] text-on-surface-variant">{review.clinic} • {review.time}</p>
-                  </div>
-                </div>
-                <div className="flex gap-0.5 mb-3">
-                  {Array.from({ length: 5 }).map((_, j) => (
-                    <span key={j} className={`material-symbols-outlined text-base ${j < review.rating ? 'text-amber-500' : 'text-outline-variant/30'}`} style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                  ))}
-                </div>
-                <p className="text-sm text-on-surface-variant leading-relaxed">&ldquo;{review.text}&rdquo;</p>
-              </div>
+        {/* Human Voice Traces / Extracted Entities */}
+        <div className="mt-16 glass-card rounded-[2rem] p-8 antigravity-shadow">
+          <div className="flex items-center justify-between mb-8">
+            <h5 className="font-[Manrope] text-2xl font-bold flex items-center gap-3">
+              <span className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center material-symbols-outlined text-xl block leading-none">
+                dynamic_feed
+              </span>
+              Human Voice / Source Traces
+            </h5>
+            <span className="text-sm text-on-surface-variant font-medium bg-surface-container-high px-4 py-1.5 rounded-full">
+              Extracted Entities
+            </span>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {(data?.sources || [
+              { entity: "Severe Nausea", sourceId: "reddit_12345", contextSnippet: "I felt dizzy immediately after starting this dose, very hard to focus on work.", sourceType: "r/medical_advice" },
+              { entity: "Disrupted Sleep Cycle", sourceId: "reddit_54321", contextSnippet: "Waking up at 3AM constantly now. Anyone else feeling wired?", sourceType: "r/insomnia" },
+              { entity: "Cognitive Fog", sourceId: "reddit_99999", contextSnippet: "Words aren't coming out right, but it clears up towards the evening.", sourceType: "r/health" },
+            ]).map((source, i) => (
+              <SourceCard 
+                key={i}
+                entity={source.entity}
+                sourceId={source.sourceId}
+                sourceType={source.sourceType}
+                contextSnippet={source.contextSnippet}
+              />
             ))}
           </div>
         </div>

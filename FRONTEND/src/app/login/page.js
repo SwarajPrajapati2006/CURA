@@ -10,6 +10,16 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
+  const indiaStatesAndCities = {
+    "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Nashik"],
+    "Delhi": ["New Delhi", "Dwarka", "Rohini"],
+    "Karnataka": ["Bangalore", "Mysore", "Hubli"],
+    "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai"],
+    "Rajasthan": ["Jaipur", "Udaipur", "Jodhpur"],
+    "Gujarat": ["Ahmedabad", "Surat", "Vadodara"]
+  };
+  const [selectedState, setSelectedState] = useState("");
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -273,26 +283,40 @@ export default function LoginPage() {
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-on-surface uppercase tracking-wider pl-1">State</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant text-[18px]">map</span>
-                    <input
-                      type="text"
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant text-[18px] pointer-events-none">map</span>
+                    <select
                       name="state"
-                      placeholder="e.g. Rajasthan"
-                      className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl py-3 pl-9 pr-4 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-on-surface-variant/50"
-                    />
+                      value={selectedState}
+                      onChange={(e) => setSelectedState(e.target.value)}
+                      required
+                      className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl py-3 pl-9 pr-8 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all appearance-none cursor-pointer"
+                    >
+                      <option value="" disabled hidden>Select State</option>
+                      {Object.keys(indiaStatesAndCities).map(state => (
+                        <option key={state} value={state}>{state}</option>
+                      ))}
+                    </select>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant text-[20px] pointer-events-none">expand_more</span>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-on-surface uppercase tracking-wider pl-1">District</label>
+                  <label className="text-xs font-bold text-on-surface uppercase tracking-wider pl-1">District / City</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant text-[18px]">location_city</span>
-                    <input
-                      type="text"
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant text-[18px] pointer-events-none">location_city</span>
+                    <select
                       name="district"
-                      placeholder="e.g. Jaipur"
-                      className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl py-3 pl-9 pr-4 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-on-surface-variant/50"
-                    />
+                      defaultValue=""
+                      required
+                      disabled={!selectedState}
+                      className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl py-3 pl-9 pr-8 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <option value="" disabled hidden>Select City</option>
+                      {selectedState && indiaStatesAndCities[selectedState].map(city => (
+                        <option key={city} value={city}>{city}</option>
+                      ))}
+                    </select>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant text-[20px] pointer-events-none">expand_more</span>
                   </div>
                 </div>
               </div>
